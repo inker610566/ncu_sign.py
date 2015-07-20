@@ -8,6 +8,7 @@ ncu auto-signin-out base on selenium
 ## How to Run ##
   * create secret.py under same dir
   * set username and password
+  * Run following shell command
 ```shell
 python ncu_sign.py > log
 ```
