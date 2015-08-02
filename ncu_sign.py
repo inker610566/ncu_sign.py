@@ -111,11 +111,12 @@ def sign_in_daemon(username, password):
         except NotOnTimeException:
             pass
 
-        # second project start at  15:00 - delta ~ 23:00 + delta
-        try:
-            sign_in_and_sign_out(username, password, getNextHour(15), getNextHour(23), 2)
-        except NotOnTimeException:
-            pass
+        if pn == 2:
+            # second project start at  15:00 - delta ~ 23:00 + delta
+            try:
+                sign_in_and_sign_out(username, password, getNextHour(15), getNextHour(23), 2)
+            except NotOnTimeException:
+                pass
 
 
     #browser = webdriver.Firefox()
