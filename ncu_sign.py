@@ -29,12 +29,17 @@ def getProjectNumber(username, password):
     return result
 
 
-def sign_in(username, password, project_no):
+def sign_in(username, password):
+    '''
+    :return: True if there're any project can signin
+    '''
     browser = webdriver.Firefox()
     login(browser, "http://140.115.182.62/PartTime/parttime.php/signin", username, password)
     # click radio
     table = browser.find_elements_by_tag_name("table")[1]
-    tr = table.find_elements_by_tag_name("tr")[project_no]
+    trs = table.find_elements_by_tag_name("tr")
+    if len(trs) < 2: return False
+    tr = trs[1]
     radio = tr.find_element_by_name("signin")
     radio.click()
     browser.find_element_by_id("submit").click()
@@ -56,13 +61,12 @@ class NotOnTimeException(Exception):
         pass
 
 
-def sign_in_and_sign_out(username, password, start, end, project_no):
+def try_sign_in_and_sign_out(username, password, start, end):
     '''
     :param username:
     :param password:
     :param start:
     :param end:
-    :param project_no: start from 1
     :return:
     '''
     if start < datetime.now():
@@ -74,8 +78,8 @@ def sign_in_and_sign_out(username, password, start, end, project_no):
         log("sleep %s seconds" % d.seconds)
         sleep(d.seconds)
     #sign_in(username, password, 1)
-    sign_in(username, password, project_no)
-
+    if not sign_in(username, password):
+        return
     end += timedelta(seconds=randint(300, 1700))
     log("intend to sign-out at %s" % end.strftime("%Y/%m/%d %H-%M-%S"))
     d = end - datetime.now()
@@ -107,16 +111,15 @@ def sign_in_daemon(username, password):
     while True:
         # first project start at 6:00 - delta ~ 14:00 + delta
         try:
-            sign_in_and_sign_out(username, password, getNextHour(6), getNextHour(14), 1)
+            try_sign_in_and_sign_out(username, password, getNextHour(6), getNextHour(14))
         except NotOnTimeException:
             pass
 
-        if pn == 2:
-            # second project start at  15:00 - delta ~ 23:00 + delta
-            try:
-                sign_in_and_sign_out(username, password, getNextHour(15), getNextHour(23), 2)
-            except NotOnTimeException:
-                pass
+        # second project start at  15:00 - delta ~ 23:00 + delta
+        try:
+            try_sign_in_and_sign_out(username, password, getNextHour(15), getNextHour(23))
+        except NotOnTimeException:
+            pass
 
 
     #browser = webdriver.Firefox()
